@@ -1,7 +1,7 @@
 package com.boldradius.sdf.akka
 
 import akka.actor.{Actor, ActorLogging}
-import com.boldradius.sdf.akka.RealTimeStatsActor.{UserLoggedOut, UserTrack}
+import com.boldradius.sdf.akka.RealTimeStatsActor._
 
 import scala.collection.mutable
 
@@ -15,6 +15,13 @@ class RealTimeStatsActor extends Actor with ActorLogging {
 
     case ulo: UserLoggedOut =>
       userTrack.remove(ulo.sessionId)
+
+    case TotalUsersRequest =>
+      TotalUsersResponse(userTrack.size)
+    case TotalUsersPerUrlRequest =>
+
+    case TotalUsersPerBrowserRequest =>
+
   }
 }
 
