@@ -7,7 +7,6 @@ import scala.collection.mutable
 
 // Mr Dummy Consumer simply shouts to the log the messages it receives
 class Receiver(statsActor: ActorRef, emailActor: ActorRef) extends Actor with ActorLogging {
-
   private val actorsBySession = mutable.HashMap.empty[Long, ActorRef]
 
   def receive: Receive = {

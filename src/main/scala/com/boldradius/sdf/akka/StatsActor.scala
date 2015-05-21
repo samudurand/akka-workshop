@@ -15,11 +15,8 @@ class StatsActor extends Actor with ActorLogging {
   var stats = new Statistics()
 
   val config = context.system.settings.config
-
   val statsRepository = new StatsRepository(log, config)
-
   val saveInterval = config.getInt("stats.save-interval") millis
-
   val scheduler = context.system.scheduler.schedule(saveInterval, saveInterval, self, SaveStats)
 
   override def preStart(): Unit = {
@@ -173,5 +170,4 @@ object StatsActor {
   case class StatsDump(requests: List[Visit])
 
   case object SaveStats
-
 }
