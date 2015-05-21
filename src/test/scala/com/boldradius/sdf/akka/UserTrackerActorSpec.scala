@@ -8,6 +8,7 @@ import com.boldradius.sdf.akka.UserTrackerActor.Visit
 import org.scalatest.{Matchers, WordSpec, FunSuite}
 import akka.actor.ActorDSL._
 import scala.concurrent.duration._
+import org.joda.time.Duration
 
 class UserTrackerActorSpec extends WordSpec with Matchers {
 
@@ -33,8 +34,8 @@ class UserTrackerActorSpec extends WordSpec with Matchers {
       val r1 = Request(1, 1, "url1", "ref1", "b1")
       val r2 = Request(2, 2, "url2", "ref2", "b2")
 
-      val v1 = Visit(r1, 1)
-      val v2 = Visit(r2, 2)
+      val v1 = Visit(r1, new Duration(1000))
+      val v2 = Visit(r2, new Duration(2000))
 
       userTrackerActor ! r1
       Thread.sleep(100)

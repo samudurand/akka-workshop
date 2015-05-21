@@ -6,6 +6,7 @@ import com.boldradius.sdf.akka.UserTrackerActor.Visit
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.duration._
+import org.joda.time.Duration
 
 class UserTrackerActor(statsActor: ActorRef, chatActor: ActorRef) extends Actor with ActorLogging {
 
@@ -39,9 +40,9 @@ class UserTrackerActor(statsActor: ActorRef, chatActor: ActorRef) extends Actor 
   }
 
   def saveLastVisit() = {
-    val currentTime = System.nanoTime()
-    val durationLastVisit = currentTime - lastMessageTime
-    if(currentRequest.isDefined) visits += Visit(currentRequest.get, durationLastVisit)
+    val currentTime = System.currentTimeMillis()
+    val durationLastVisit = if(lastMessageTime == 0) 0 else currentTime - lastMessageTime
+    if(currentRequest.isDefined) visits += Visit(currentRequest.get, new Duration(durationLastVisit))
     lastMessageTime = currentTime
   }
 
@@ -67,5 +68,5 @@ class UserTrackerActor(statsActor: ActorRef, chatActor: ActorRef) extends Actor 
 object UserTrackerActor {
   def props(statsActor: ActorRef, chatActor: ActorRef):Props = Props(new UserTrackerActor(statsActor, chatActor))
 
-  case class Visit(request: Request, duration: Long)
+  case class Visit(request: Request, duration: Duration)
 }

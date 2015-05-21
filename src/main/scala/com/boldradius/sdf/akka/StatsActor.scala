@@ -4,9 +4,9 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.boldradius.sdf.akka.StatsActor.{SaveStats, StatsDump}
 import com.boldradius.sdf.akka.UserTrackerActor.Visit
 import org.joda.time.DateTime
-import scala.concurrent.duration._
 
 import scala.collection.mutable
+import scala.concurrent.duration._
 
 class StatsActor extends Actor with ActorLogging {
 
@@ -23,7 +23,6 @@ class StatsActor extends Actor with ActorLogging {
   val scheduler = context.system.scheduler.schedule(saveInterval, saveInterval, self, SaveStats)
 
   override def preStart(): Unit = {
-
     statsRepository.loadStatistics().foreach(loadedStatistics => stats = loadedStatistics)
   }
 
@@ -35,7 +34,7 @@ class StatsActor extends Actor with ActorLogging {
         calculateHitsPerMinute(visit.request.timestamp)
         calculatePageVisitDistribution(visit.request.url)
         calculateReferrerDistribution(visit.request.referrer)
-        calculateVisitTimeAverage(visit.request.url, visit.duration)
+        calculateVisitTimeAverage(visit.request.url, visit.duration.getStandardSeconds)
       })
 
       calculateSinkPageVisitDistribution(visits.reverse.head.request.url)
@@ -119,12 +118,14 @@ class StatsActor extends Actor with ActorLogging {
   }
 
   private[akka] def calculateVisitTimeAverage(url: String, duration: Long) = {
-    val visit = stats.visitTimeDistribution(url)
-    val newCount = visit.count + 1
-    val newAverage = (visit.count * visit.avTime + duration) / (visit.count + 1)
+    if (duration != 0) {
+      val visit = stats.visitTimeDistribution(url)
+      val newCount = visit.count + 1
+      val newAverage = (visit.count * visit.avTime + duration) / (visit.count + 1)
 
-    stats.visitTimeDistribution.update(url, VisitAv(newCount, newAverage))
-    log.info(s"Updated visit time average for url:[${url}] to [${newAverage}]")
+      stats.visitTimeDistribution.update(url, VisitAv(newCount, newAverage))
+      log.info(s"Updated visit time average for url:[${url}] to [${newAverage}]")
+    }
   }
 }
 
