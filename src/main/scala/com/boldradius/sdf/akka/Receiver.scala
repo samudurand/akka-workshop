@@ -1,21 +1,26 @@
 package com.boldradius.sdf.akka
 
 import akka.actor._
+import com.boldradius.sdf.akka.RealTimeStatsActor.{UserLoggedOut, UserTrack}
 import com.boldradius.sdf.akka.ShieldActor.BannedRequest
 
 import scala.collection.mutable
 
-// Mr Dummy Consumer simply shouts to the log the messages it receives
 class Receiver(statsActor: ActorRef, emailActor: ActorRef) extends Actor with ActorLogging {
   private val actorsBySession = mutable.HashMap.empty[Long, ActorRef]
+  private val realTimeStatsActor = context.actorOf(RealTimeStatsActor.props)
 
   def receive: Receive = {
     case request: Request =>
       val actor = getFromSessionOrCreate(request.sessionId)
       actor ! request
+      realTimeStatsActor ! UserTrack(request.sessionId, request.url, request.browser)
     case BannedRequest(request) => log.info("Reject request from session {}", request.sessionId)
-    case Terminated(tracker) => actorsBySession -=
-      actorsBySession.find(_._2 == tracker).get._1
+    case Terminated(tracker) =>
+      val sessionId = actorsBySession.find(_._2 == tracker).get._1
+      actorsBySession -= sessionId
+      realTimeStatsActor ! UserLoggedOut(sessionId)
+
   }
 
   def getFromSessionOrCreate(sessionId: Long): ActorRef = {

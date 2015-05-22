@@ -30,7 +30,6 @@ class ShieldActor(statsActor: ActorRef, chatActor: ActorRef) extends Actor with 
       messageCount += 1
       userTracker ! request
     } else {
-
       sender() ! BannedRequest(request)
     }
   }
